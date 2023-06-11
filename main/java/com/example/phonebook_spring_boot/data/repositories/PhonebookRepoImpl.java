@@ -50,7 +50,7 @@ public class PhonebookRepoImpl implements PhonebookRepo{
 				return phonebook(result);
 			}
 			connection.close();
-			throw  new PhonebookDoesNotExistException("phonebook does not exist");
+			throw new PhonebookDoesNotExistException("phonebook does not exist");
 		} catch (SQLException e) {
 			throw new PhonebookDoesNotExistException(e.getMessage());
 		}
