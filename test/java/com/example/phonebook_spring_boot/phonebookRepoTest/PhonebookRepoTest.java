@@ -38,8 +38,10 @@ public class PhonebookRepoTest {
 		Phonebook phonebook = new Phonebook();
 		phonebook.setName("Malik");
 		Optional<Phonebook> savedPhonebook = phonebookRepo.save(phonebook);
-		System.out.println("The phonebook id is: "+phonebook.getId());
-		Optional<Phonebook> foundPhonebook = phonebookRepo.findPhonebookById(3);
+		int id = 0;
+		if (savedPhonebook.isPresent())
+			id = savedPhonebook.get().getId();
+		Optional<Phonebook> foundPhonebook = phonebookRepo.findPhonebookById((id));
 		assertEquals(foundPhonebook, savedPhonebook);
 		assertNotNull(foundPhonebook);
 	}
@@ -49,7 +51,9 @@ public class PhonebookRepoTest {
 		Phonebook phonebook = new Phonebook();
 		phonebook.setName("Malik");
 		Optional<Phonebook> savedPhonebook = phonebookRepo.save(phonebook);
-		Optional<Phonebook> foundPhonebook = phonebookRepo.findPhonebookByName(phonebook.getName());
+		String name = null;
+		if (savedPhonebook.isPresent()) name = savedPhonebook.get().getName();
+		Optional<Phonebook> foundPhonebook = phonebookRepo.findPhonebookByName(name);
 		assertEquals(foundPhonebook, savedPhonebook);
 		assertNotNull(foundPhonebook);
 	}
@@ -59,7 +63,10 @@ public class PhonebookRepoTest {
 		Phonebook phonebook = new Phonebook();
 		phonebook.setName("Malik");
 		Optional<Phonebook> savedPhonebook = phonebookRepo.save(phonebook);
-		phonebookRepo.deletePhonebookById(3);
-		assertNull(phonebookRepo.findPhonebookById(phonebook.getId()));
+		int id = 0;
+		if (savedPhonebook.isPresent())
+			id = savedPhonebook.get().getId();
+		phonebookRepo.deletePhonebookById(phonebook.getId());
+		assertNull(phonebookRepo.findPhonebookById(id));
 	}
 }

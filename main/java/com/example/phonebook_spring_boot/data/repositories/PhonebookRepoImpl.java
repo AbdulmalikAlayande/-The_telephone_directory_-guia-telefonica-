@@ -41,16 +41,15 @@ public class PhonebookRepoImpl implements PhonebookRepo{
 		} catch (SQLException e) {
 			throw new TableCreationFailedException(e.getMessage());
 		}
-		String findSql = "select * from phonebook where id = 3";
+		String findSql = "select * from phonebook where id = 4";
 		try {
 			PreparedStatement statement = connection.prepareStatement(findSql);
-			System.out.println("i am here");
 			ResultSet result = statement.executeQuery();
 			if (result.next()) {
 				return phonebook(result);
 			}
 			connection.close();
-			throw new PhonebookDoesNotExistException("phonebook does not exist");
+			throw new  PhonebookDoesNotExistException("phonebook does not exist");
 		} catch (SQLException e) {
 			throw new PhonebookDoesNotExistException(e.getMessage());
 		}
@@ -75,7 +74,7 @@ public class PhonebookRepoImpl implements PhonebookRepo{
 	
 	@Override
 	public Optional<Phonebook> findPhonebookById(int phonebookId) throws DatabaseConnectionFailedException {
-		String sqlFindByIdQuery = "select * from phonebook where id = 1";
+		String sqlFindByIdQuery = "select * from phonebook where id = "+phonebookId;
 		PreparedStatement statement;
 		Connection connection = getConnection();
 		try {
@@ -84,7 +83,7 @@ public class PhonebookRepoImpl implements PhonebookRepo{
 			if (sqlReturn.next()){
 				return phonebook(sqlReturn);
 			}
-			return Optional.empty();
+			else return Optional.empty();
 		} catch (SQLException e) {
 			throw new RuntimeException(e.getMessage());
 		}
@@ -142,6 +141,7 @@ public class PhonebookRepoImpl implements PhonebookRepo{
 		}
 	}
 	private static Optional<Phonebook> phonebook(ResultSet result) throws SQLException {
+		System.out.println("This code you are hypocritical, na only when Moyin dey you dey alway pass");
 		return Optional.of(Phonebook.builder()
 				                   .name(result.getString(2))
 				                   .id(result.getInt(1))

@@ -12,7 +12,8 @@ public class Phonebook {
 	@NonNull
 	private String name;
 	
-	@Override public boolean equals(Object object){
+	@Override
+	public boolean equals(Object object){
 		if (object == null ||object.getClass() != getClass() || object.getClass() == null) return false;
 		Phonebook phonebook = (Phonebook) object;
 		return phonebook.id == this.id && phonebook.name.equals(this.name);
