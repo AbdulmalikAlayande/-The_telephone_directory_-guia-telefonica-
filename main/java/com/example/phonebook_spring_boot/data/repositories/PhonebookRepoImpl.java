@@ -2,14 +2,16 @@ package com.example.phonebook_spring_boot.data.repositories;
 //git push -u origin main
 import com.example.phonebook_spring_boot.data.models.Phonebook;
 import com.example.phonebook_spring_boot.exceptions.DatabaseConnectionFailedException;
-import com.example.phonebook_spring_boot.exceptions.PhonebookDoesNotExistException;
-import com.example.phonebook_spring_boot.exceptions.TableCreationFailedException;
+import com.example.phonebook_spring_boot.exceptions.phonebookExceptions.PhonebookDoesNotExistException;
+import com.example.phonebook_spring_boot.exceptions.phonebookExceptions.TableCreationFailedException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.Formatter;
+import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
 
 @Repository
 @Slf4j
@@ -32,21 +34,19 @@ public class PhonebookRepoImpl implements PhonebookRepo{
 	@Override
 	public Optional<Phonebook> save(Phonebook phonebook) throws DatabaseConnectionFailedException, TableCreationFailedException, PhonebookDoesNotExistException {
 		Connection connection = prepareSqlTableCreationQuery();
-		String sql = "INSERT INTO phonebook VALUES (NULL, ?)";
+		String sql = "INSERT INTO phonebook (name) VALUES (?)";
+		PreparedStatement statement;
 		try {
-			PreparedStatement statement = connection.prepareStatement(sql);
+			statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 			statement.setString(1, phonebook.getName());
 			statement.executeUpdate();
 			log.info("Saving {}", "Saved successfully!");
-		} catch (SQLException e) {
-			throw new TableCreationFailedException(e.getMessage());
+		}catch (SQLException exception){
+			throw new TableCreationFailedException("ERROR: Failed to save phonebook!");
 		}
-		String findSql = "select * from phonebook where id = 4";
-		try {
-			PreparedStatement statement = connection.prepareStatement(findSql);
-			ResultSet result = statement.executeQuery();
-			if (result.next()) {
-				return phonebook(result);
+		try (ResultSet keys = statement.getGeneratedKeys()){
+			if (keys.next()) {
+				return findPhonebookById(keys.getInt(1));
 			}
 			connection.close();
 			throw new  PhonebookDoesNotExistException("phonebook does not exist");
@@ -58,9 +58,10 @@ public class PhonebookRepoImpl implements PhonebookRepo{
 	private Connection prepareSqlTableCreationQuery() throws DatabaseConnectionFailedException, TableCreationFailedException {
 		String sqlQuery = """
 				CREATE TABLE if not exists `phonebook_db`.`phonebook` (
-				  `id` INT NOT NULL AUTO_INCREMENT,
-				  `name` VARCHAR(45) NULL,
-				  PRIMARY KEY (`id`));""";
+				`id` INT NOT NULL AUTO_INCREMENT,
+				`name` VARCHAR(45) NULL,
+				PRIMARY KEY (`id`));
+				""";
 		Connection connection = getConnection();
 		try {
 			PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
@@ -86,6 +87,24 @@ public class PhonebookRepoImpl implements PhonebookRepo{
 			else return Optional.empty();
 		} catch (SQLException e) {
 			throw new RuntimeException(e.getMessage());
+		}
+	}
+	
+	@Override
+	public Map<String, Optional<Phonebook>> getAllPhonebooksInTheDatabase() throws DatabaseConnectionFailedException {
+		Map<String, Optional<Phonebook>> allPhonebooks = new TreeMap<>();
+		int counter = 0;
+		String sqlGetAllPhonebookQuery = "select * from phonebook";
+		Connection connection = getConnection();
+		try(PreparedStatement statement = connection.prepareStatement(sqlGetAllPhonebookQuery)) {
+			ResultSet resultSet = statement.executeQuery();
+			while (resultSet.next()){
+				allPhonebooks.put(String.valueOf(counter), phonebook(resultSet));
+				counter++;
+			}
+			return allPhonebooks;
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
 		}
 	}
 	
@@ -122,7 +141,7 @@ public class PhonebookRepoImpl implements PhonebookRepo{
 	@Override
 	public void deleteAll() throws DatabaseConnectionFailedException {
 		Connection connection = getConnection();
-		String sqlDeleteAllQuery = "DELETE FROM your_table";
+		String sqlDeleteAllQuery = "DELETE FROM phonebook";
 		try {
 			connection.prepareStatement(sqlDeleteAllQuery);
 		} catch (SQLException e) {
@@ -141,7 +160,6 @@ public class PhonebookRepoImpl implements PhonebookRepo{
 		}
 	}
 	private static Optional<Phonebook> phonebook(ResultSet result) throws SQLException {
-		System.out.println("This code you are hypocritical, na only when Moyin dey you dey alway pass");
 		return Optional.of(Phonebook.builder()
 				                   .name(result.getString(2))
 				                   .id(result.getInt(1))
