@@ -36,6 +36,7 @@ public class PhonebookRepoImpl implements PhonebookRepo{
 		Connection connection = prepareSqlTableCreationQuery();
 		PreparedStatement statement = getPreparedStatement(phonebook, connection);
 		try (ResultSet keys = statement.getGeneratedKeys()){
+		
 			if (keys.next()) {
 				return findPhonebookById(keys.getInt(1));
 			}
@@ -133,9 +134,8 @@ public class PhonebookRepoImpl implements PhonebookRepo{
 	@Override
 	public void deletePhonebookById(int id) throws DatabaseConnectionFailedException {
 		String sqlDeleteQuery = "delete from phonebook where id ="+id;
-		Connection connection;
 		try {
-			connection = getConnection();
+			Connection connection = getConnection();
 			PreparedStatement statement = connection.prepareStatement(sqlDeleteQuery);
 			statement.executeUpdate();
 		} catch (SQLException e) {
