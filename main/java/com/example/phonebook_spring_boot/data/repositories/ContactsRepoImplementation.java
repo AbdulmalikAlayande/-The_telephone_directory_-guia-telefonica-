@@ -21,22 +21,20 @@ public class ContactsRepoImplementation implements ContactsRepository{
 	String username = "root";
 	String password = "seriki@64";
 	
+	private Connection getConnection() throws DatabaseConnectionFailedException {
+		try {
+			Connection connection = DriverManager.getConnection(url, username, password);
+			log.info("Database Connection {}", "Connection Successful");
+			return connection;
+		} catch (SQLException e) {
+			throw new DatabaseConnectionFailedException(e.getMessage());
+		}
+	}
+	
 	@Override
 	public Optional<Contact> saveContact(Contact contact) throws DatabaseConnectionFailedException, TableCreationFailedException, DatabaseInsertionFailedException, ContactDoesNotExistException {
-		PreparedStatement statement = null;
-		Connection connection;
-		try{
-			connection = createdDatabase();
-			statement = saveContactToDatabase(connection);
-			statement.setString(1, contact.getName());
-			statement.setString(2, contact.getPhoneNumber());
-			statement.setInt(3, contact.getPhonebookId());
-			statement.executeUpdate();
-			log.info("Saving {}", "Saved successfully!");
-//			connection.close();
-		}catch (SQLException exception){
-			log.info("Error ===::> {}", exception.getMessage());
-		}
+		Connection connection = createdDatabase();
+		PreparedStatement statement = saveContactToDatabase(connection, contact);
 		ResultSet keys;
 		try {
 			keys = statement.getGeneratedKeys();
@@ -49,15 +47,16 @@ public class ContactsRepoImplementation implements ContactsRepository{
 		}
 	}
 	
-	private PreparedStatement saveContactToDatabase(Connection connection) throws DatabaseInsertionFailedException {
-		String sqlInsertQuery = """
-				insert into Contact (name) values (?)
-				insert into Contact (phoneNumber) values (?)
-				insert into Contact (phonebookId) values (?)
-				""";
+	private PreparedStatement saveContactToDatabase(Connection connection, Contact contact) throws DatabaseInsertionFailedException {
+		String sqlInsertQuery = "insert into `Contact` (`name`, phoneNumber, phonebookId) values (?, ?, ?)";
 		PreparedStatement statement;
 		try {
 			statement = connection.prepareStatement(sqlInsertQuery, Statement.RETURN_GENERATED_KEYS);
+			statement.setString(1, contact.getName());
+			statement.setString(2, contact.getPhoneNumber());
+			statement.setInt(3, contact.getPhonebookId());
+			statement.executeUpdate();
+			log.info("Saving {}", "Saved successfully!");
 		} catch (SQLException e) {
 			throw new DatabaseInsertionFailedException(e.getMessage());
 		}
@@ -65,36 +64,24 @@ public class ContactsRepoImplementation implements ContactsRepository{
 	}
 	
 	private Connection createdDatabase() throws DatabaseConnectionFailedException, TableCreationFailedException {
-		Connection connection = getConnection();
 		String sqlTableCreationQuery = """
-										use phonebook_db;
-										create table if not exist `Contact`(
-										`name` varchar(45) null,
-										phoneNumber varchar(15) null,
-										phonebookId int null,
-										id not null auto_increment,
-										constraint contact_pk primary key(id),
-										constraint contact_fk foreign key(phonebookId)
-																references phonebook(phonebookId)
-										);
-										""";
+				CREATE TABLE IF NOT EXISTS `phonebook_db` `Contact` (
+				`id` INT NOT NULL AUTO_INCREMENT,
+				`name` VARCHAR(45) NULL,
+				`phoneNumber` VARCHAR(15) NULL,
+				`phonebookId` INT NULL,
+				CONSTRAINT contact_pk PRIMARY KEY (id),
+				CONSTRAINT contact_fk FOREIGN KEY (phonebookId) REFERENCES `phonebook`(`id`));
+				""";
+		Connection connection = getConnection();
 		try {
 			PreparedStatement statement = connection.prepareStatement(sqlTableCreationQuery);
-			statement.executeQuery();
-			return connection;
+			statement.executeUpdate();
+			log.info("Contact Database Created {}", "Table Contact created successfully");
 		} catch (SQLException e) {
 			throw new TableCreationFailedException(e.getMessage());
 		}
-	}
-	
-	private Connection getConnection() throws DatabaseConnectionFailedException {
-		try {
-			Connection connection = DriverManager.getConnection(url, username, password);
-			log.info("Database Connection {}", "Connection Successful");
-			return connection;
-		} catch (SQLException e) {
-			throw new DatabaseConnectionFailedException(e.getMessage());
-		}
+		return connection;
 	}
 	
 	@Override

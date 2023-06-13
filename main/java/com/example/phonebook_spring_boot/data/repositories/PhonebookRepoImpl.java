@@ -34,6 +34,19 @@ public class PhonebookRepoImpl implements PhonebookRepo{
 	@Override
 	public Optional<Phonebook> save(Phonebook phonebook) throws DatabaseConnectionFailedException, TableCreationFailedException, PhonebookDoesNotExistException {
 		Connection connection = prepareSqlTableCreationQuery();
+		PreparedStatement statement = getPreparedStatement(phonebook, connection);
+		try (ResultSet keys = statement.getGeneratedKeys()){
+			if (keys.next()) {
+				return findPhonebookById(keys.getInt(1));
+			}
+			connection.close();
+			throw new  PhonebookDoesNotExistException("phonebook does not exist");
+		} catch (SQLException e) {
+			throw new PhonebookDoesNotExistException(e.getMessage());
+		}
+	}
+	
+	private  PreparedStatement getPreparedStatement(Phonebook phonebook, Connection connection) throws TableCreationFailedException {
 		String sql = "INSERT INTO phonebook (name) VALUES (?)";
 		PreparedStatement statement;
 		try {
@@ -44,15 +57,7 @@ public class PhonebookRepoImpl implements PhonebookRepo{
 		}catch (SQLException exception){
 			throw new TableCreationFailedException("ERROR: Failed to save phonebook!");
 		}
-		try (ResultSet keys = statement.getGeneratedKeys()){
-			if (keys.next()) {
-				return findPhonebookById(keys.getInt(1));
-			}
-			connection.close();
-			throw new  PhonebookDoesNotExistException("phonebook does not exist");
-		} catch (SQLException e) {
-			throw new PhonebookDoesNotExistException(e.getMessage());
-		}
+		return statement;
 	}
 	
 	private Connection prepareSqlTableCreationQuery() throws DatabaseConnectionFailedException, TableCreationFailedException {
