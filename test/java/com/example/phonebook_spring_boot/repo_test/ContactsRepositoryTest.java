@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -76,7 +77,21 @@ class ContactsRepositoryTest {
 		contactsRepository.saveContact(contact1);
 		Map<String, Optional<Contact>> allContacts = contactsRepository.getAllContactsInTheDatabase();
 		for (int i = 0; i < allContacts.size(); i++) {
-			assertNotNull(allContacts.get(String.valueOf(i+1)));
+			assertNotNull(allContacts.get(String.valueOf(i)));
+		}
+	}
+	
+	@SneakyThrows
+	@Test void getAllContactsInAParticularPhonebookTest(){
+		Contact contact1 = new Contact();
+		contact1.setName("Abolade");
+		contact1.setPhonebookId(34);
+		contact1.setPhoneNumber("08181587649");
+		contactsRepository.saveContact(contact1);
+		
+		Set<Optional<Contact>> contactsInPhonebook = contactsRepository.getAllContactRelatingToPhonebookWithThePhonebookId(contact1.getPhonebookId());
+		for (int i = 0; i < contactsInPhonebook.size(); i++) {
+			assertNotNull(contactsInPhonebook.stream().findAny());
 		}
 	}
 }

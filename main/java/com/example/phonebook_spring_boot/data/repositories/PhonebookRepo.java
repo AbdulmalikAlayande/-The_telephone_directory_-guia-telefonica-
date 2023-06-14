@@ -10,10 +10,10 @@ import java.util.Optional;
 
 public interface PhonebookRepo {
 	Optional<Phonebook> save(Phonebook phonebook) throws DatabaseConnectionFailedException, TableCreationFailedException, PhonebookDoesNotExistException;
-	Optional<Phonebook> findPhonebookById(int id) throws DatabaseConnectionFailedException, PhonebookDoesNotExistException;
+	Optional<Phonebook> findPhonebookById(String id) throws DatabaseConnectionFailedException, PhonebookDoesNotExistException;
 	Map<String , Optional<Phonebook>> getAllPhonebooksInTheDatabase() throws DatabaseConnectionFailedException;
 	Optional<Phonebook> findPhonebookByName(String phonebookName) throws DatabaseConnectionFailedException, PhonebookDoesNotExistException;
-	void deletePhonebookById(int id) throws DatabaseConnectionFailedException, PhonebookDoesNotExistException;
+	void deletePhonebookById(String id) throws DatabaseConnectionFailedException, PhonebookDoesNotExistException;
 	void deleteAll() throws DatabaseConnectionFailedException;
 	void deleteDatabase() throws DatabaseConnectionFailedException;
 }

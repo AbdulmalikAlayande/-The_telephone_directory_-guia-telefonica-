@@ -35,7 +35,7 @@ public class PhonebookRepoTest {
 	
 	@SneakyThrows
 	@Test void findByIdTest(){
-		int id = 0;
+		String id = null;
 		if (savedPhonebook.isPresent()) id = savedPhonebook.get().getId();
 		Optional<Phonebook> foundPhonebook = phonebookRepo.findPhonebookById((id));
 		assertEquals(foundPhonebook, savedPhonebook);
@@ -52,7 +52,7 @@ public class PhonebookRepoTest {
 	
 	@SneakyThrows
 	@Test void savePhonebookDeleteSavedPhonebookByIdTest(){
-		int id = 0;
+		String id = null;
 		if (savedPhonebook.isPresent())
 			id = savedPhonebook.get().getId();
 		phonebookRepo.deletePhonebookById(id);
