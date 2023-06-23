@@ -38,7 +38,7 @@ public class PhonebookRepoImpl implements PhonebookRepo{
 		try (ResultSet keys = statement.getGeneratedKeys()){
 		
 			if (keys.next()) {
-				return findPhonebookById(keys.getString(1));
+				return findPhonebookById(keys.getLong(1));
 			}
 			connection.close();
 			throw new  PhonebookDoesNotExistException("phonebook does not exist");
@@ -80,7 +80,7 @@ public class PhonebookRepoImpl implements PhonebookRepo{
 	}
 	
 	@Override
-	public Optional<Phonebook> findPhonebookById(String phonebookId) throws DatabaseConnectionFailedException {
+	public Optional<Phonebook> findPhonebookById(Long phonebookId) throws DatabaseConnectionFailedException {
 		String sqlFindByIdQuery = "select * from phonebook where id = "+phonebookId;
 		PreparedStatement statement;
 		Connection connection = getConnection();
@@ -132,7 +132,7 @@ public class PhonebookRepoImpl implements PhonebookRepo{
 	}
 	
 	@Override
-	public void deletePhonebookById(String id) throws DatabaseConnectionFailedException {
+	public void deletePhonebookById(Long id) throws DatabaseConnectionFailedException {
 		String sqlDeleteQuery = "delete from phonebook where id ="+id;
 		try {
 			Connection connection = getConnection();
@@ -167,7 +167,7 @@ public class PhonebookRepoImpl implements PhonebookRepo{
 	private static Optional<Phonebook> phonebook(ResultSet result) throws SQLException {
 		return Optional.of(Phonebook.builder()
 				                   .name(result.getString(2))
-				                   .id(result.getString(1))
+				                   .id(result.getLong(1))
 				                   .build());
 	}
 }

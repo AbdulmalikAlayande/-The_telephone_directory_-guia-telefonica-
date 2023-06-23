@@ -1,10 +1,15 @@
 package com.example.phonebook_spring_boot.data.models;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.*;
-import org.springframework.data.annotation.Id;
+
 
 import java.util.Objects;
 
+@Entity
 @Data
 @RequiredArgsConstructor
 @AllArgsConstructor
@@ -12,8 +17,9 @@ import java.util.Objects;
 @Builder
 public class Phonebook {
 	
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Id
-	private String id;
+	private long id;
 	@NonNull
 	private String name;
 	

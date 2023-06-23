@@ -24,20 +24,20 @@ class PhonebookJpaRepositoryTest {
 	
 	@BeforeEach
 	void setUp() {
+		jpaRepository.deleteAll();
 		phonebook = new Phonebook();
 		phonebook.setName("Abdulmalik");
 		savedPhonebook = jpaRepository.save(phonebook);
 	}
 	
-	@AfterEach
-	void tearDown() {
+	@AfterEach void tearDown() {
 	}
 	
 	@Test void savePhonebookTest(){
+		jpaRepository.deleteAll();
 		assertEquals(BigInteger.ONE.intValue(), jpaRepository.count());
 		assertNotNull(savedPhonebook);
 		assertNotNull(savedPhonebook.getName());
-		assertNotNull(savedPhonebook.getId());
 	}
 	
 	@Test void savePhonebook_FindSavedPhonebookByIdTest(){
