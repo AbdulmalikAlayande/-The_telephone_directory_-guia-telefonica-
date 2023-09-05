@@ -34,7 +34,7 @@ public class PhonebookRepoImpl implements PhonebookRepo{
 	@Override
 	public Optional<Phonebook> save(Phonebook phonebook) throws DatabaseConnectionFailedException, TableCreationFailedException, PhonebookDoesNotExistException {
 		Connection connection = prepareSqlTableCreationQuery();
-		PreparedStatement statement = getPreparedStatement(phonebook, connection);
+		PreparedStatement statement = insertValuesIntoTheTable(phonebook, connection);
 		try (ResultSet keys = statement.getGeneratedKeys()){
 		
 			if (keys.next()) {
@@ -47,7 +47,7 @@ public class PhonebookRepoImpl implements PhonebookRepo{
 		}
 	}
 	
-	private  PreparedStatement getPreparedStatement(Phonebook phonebook, Connection connection) throws TableCreationFailedException {
+	private  PreparedStatement insertValuesIntoTheTable(Phonebook phonebook, Connection connection) throws TableCreationFailedException {
 		String sql = "INSERT INTO phonebook (name) VALUES (?)";
 		PreparedStatement statement;
 		try {
@@ -62,13 +62,13 @@ public class PhonebookRepoImpl implements PhonebookRepo{
 	}
 	
 	private Connection prepareSqlTableCreationQuery() throws DatabaseConnectionFailedException, TableCreationFailedException {
+		Connection connection = getConnection();
 		String sqlQuery = """
 				CREATE TABLE if not exists `phonebook_db`.`phonebook` (
 				`id` INT NOT NULL AUTO_INCREMENT,
 				`name` VARCHAR(45) NULL,
 				PRIMARY KEY (`id`));
 				""";
-		Connection connection = getConnection();
 		try {
 			PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
 			preparedStatement.executeUpdate();
@@ -116,11 +116,10 @@ public class PhonebookRepoImpl implements PhonebookRepo{
 	
 	@Override
 	public Optional<Phonebook> findPhonebookByName(String phonebookName) throws DatabaseConnectionFailedException, PhonebookDoesNotExistException {
-		String findByNameSqlQuery = new Formatter().format("select * from phonebook where name = '%s'", phonebookName).toString();
+		String findByNameSqlQuery = String.format("select * from phonebook where name = '%s'", phonebookName);
 		Connection connection = getConnection();
 		try {
 			PreparedStatement statement = connection.prepareStatement(findByNameSqlQuery);
-			System.out.println("DAY");
 			ResultSet result = statement.executeQuery();
 			if (result.next()){
 				return phonebook(result);
